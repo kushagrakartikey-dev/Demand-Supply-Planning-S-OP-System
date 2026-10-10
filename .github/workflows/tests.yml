@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      # xgboost's wheel links against OpenMP, which the runner image does not
+      # always carry. Without it the import fails before a single test runs.
+      - name: Install OpenMP runtime
+        run: sudo apt-get update && sudo apt-get install -y libgomp1
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Report which optional engines are live
+        run: |
+          python -c "from src.planning.demand_engine import dependency_report; print(dependency_report())"
+
+      - name: Run test suite
+        run: pytest -q
+
+      # The suite runs at reduced scale against fixtures. This proves the whole
+      # pipeline still executes end to end and writes its artefacts.
+      - name: Smoke test the pipeline
+        run: python run_demo.py --quick --no-dashboard --export-reports
+
+      - name: Verify published artefacts
+        run: python scripts/verify_outputs.py

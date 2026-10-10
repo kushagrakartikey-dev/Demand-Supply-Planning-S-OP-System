@@ -1,0 +1,40 @@
+# Generated artefacts -- all reproduce deterministically from the seed via
+# `python run_demo.py`. A reviewer running one command is a better
+# demonstration than committed output files.
+data/raw/*.csv
+data/processed/*.csv
+outputs/*.xlsx
+outputs/*.json
+outputs/*.html
+outputs/cache/
+outputs/logs/
+outputs/tableau/
+*.hyper
+
+# Tableau Hyper writes a server log beside whatever launched it.
+hyperd.log
+
+# Keep the directory structure
+!.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+venv/
+.venv/
+env/
+
+# Prophet / Stan build artefacts
+*.pkl
+*.stan
+*.hpp
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
